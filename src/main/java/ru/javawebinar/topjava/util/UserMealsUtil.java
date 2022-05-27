@@ -64,7 +64,7 @@ public class UserMealsUtil {
 
     public static List<UserMealWithExcess> filteredByCustomCollector(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
         class ArrayListWithSum<T> extends ArrayList<T> {
-            private int calories = 0;
+            private int calories;
 
             public int getCalories() {
                 return calories;
