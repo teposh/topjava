@@ -7,11 +7,11 @@ import java.util.List;
 public interface MealDao {
     List<Meal> getAll();
 
-    Meal get(Integer id);
+    Meal get(int id);
 
-    void add(Meal meal);
+    Meal add(Meal meal);
 
-    void update(Meal meal);
+    Meal update(Meal meal);
 
-    void delete(Integer id);
+    void delete(int id);
 }

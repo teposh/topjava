@@ -1,8 +1,8 @@
 package ru.javawebinar.topjava.web;
 
 import org.slf4j.Logger;
+import ru.javawebinar.topjava.dao.InMemoryMealDao;
 import ru.javawebinar.topjava.dao.MealDao;
-import ru.javawebinar.topjava.dao.impl.InMemoryMealDao;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.util.MealsUtil;
 
@@ -22,53 +22,82 @@ public class MealServlet extends HttpServlet {
 
     private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
-    final static int CALORIES_PER_DAY = 2000; // 1.2.1 ... Норму калорий (caloriesPerDay) сделать в коде константой.
+    static final int CALORIES_PER_DAY = 2000; // 1.2.1 ... Норму калорий (caloriesPerDay) сделать в коде константой.
 
-    final static String INSERT_OR_EDIT_VIEW = "meal.jsp";
+    static final String INSERT_OR_EDIT_VIEW = "meal.jsp";
 
-    final static String INDEX_VIEW = "meals.jsp";
+    static final String INDEX_VIEW = "meals.jsp";
 
-    private final MealDao mealDao;
+    static final String APP_ROOT = "meals";
 
-    public MealServlet() {
+    private MealDao mealDao;
+
+    @Override
+    public void init() throws ServletException {
         mealDao = new InMemoryMealDao();
+        super.init();
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         final String action = req.getParameter("action") != null ? req.getParameter("action") : "";
-        final int id = req.getParameter("id") != null ? Integer.parseInt(req.getParameter("id")) : -1;
-
-        req.setAttribute("formatter", dateTimeFormatter);
-
-        if (action.equals("create") || action.equals("update")) {
-            req.setAttribute("meal", id >= 0 ? mealDao.get(id) : null);
-
-            req.getRequestDispatcher(INSERT_OR_EDIT_VIEW).forward(req, resp);
-        } else {
-            if (action.equals("delete") && id >= 0) {
-                mealDao.delete(id);
+        log.info("{} {}", req.getMethod(), this.getRequestPath(req));
+        switch (action) {
+            case "create": {
+                req.getRequestDispatcher(INSERT_OR_EDIT_VIEW).forward(req, resp);
+                break;
             }
-
-            req.setAttribute("meals", MealsUtil.filteredByStreams(mealDao.getAll(), LocalTime.MIN, LocalTime.MAX, CALORIES_PER_DAY));
-
-            req.getRequestDispatcher(INDEX_VIEW).forward(req, resp);
+            case "update": {
+                final int id = Integer.parseInt(req.getParameter("id"));
+                req.setAttribute("meal", mealDao.get(id));
+                req.getRequestDispatcher(INSERT_OR_EDIT_VIEW).forward(req, resp);
+                break;
+            }
+            case "delete": {
+                final int id = Integer.parseInt(req.getParameter("id"));
+                log.info("DELETE {}", mealDao.get(id));
+                mealDao.delete(id);
+                resp.sendRedirect(APP_ROOT);
+                break;
+            }
+            default: {
+                req.setAttribute("meals", MealsUtil.filteredByStreams(mealDao.getAll(), LocalTime.MIN, LocalTime.MAX, CALORIES_PER_DAY));
+                req.setAttribute("formatter", dateTimeFormatter);
+                req.getRequestDispatcher(INDEX_VIEW).forward(req, resp);
+                break;
+            }
         }
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        final Integer id = req.getParameter("id") != null ? Integer.parseInt(req.getParameter("id")) : null;
-        final LocalDateTime dateTime = LocalDateTime.parse(req.getParameter("dateTime"), dateTimeFormatter);
-        final int calories = Integer.parseInt(req.getParameter("calories"));
-        final String description = req.getParameter("description");
+        req.setCharacterEncoding("UTF-8"); // ... Проблемы с кодировкой в POST (кракозябры). ...
 
-        if (id != null && id >= 0) {
-            mealDao.update(new Meal(id, dateTime, description, calories));
+        log.info("{} {}", req.getMethod(), this.getRequestPath(req));
+
+        final Meal meal = new Meal(
+                req.getParameter("id") != null ? Integer.parseInt(req.getParameter("id")) : null,
+                LocalDateTime.parse(req.getParameter("dateTime")),
+                req.getParameter("description"),
+                Integer.parseInt(req.getParameter("calories"))
+        );
+
+        if (meal.getId() == null) {
+            log.info("CREATE {}", meal);
+            mealDao.add(meal);
         } else {
-            mealDao.add(new Meal(dateTime, description, calories));
+            log.info("UPDATE {}", meal);
+            mealDao.update(meal);
         }
 
-        resp.sendRedirect("meals");
+        resp.sendRedirect(APP_ROOT);
+    }
+
+    private String getRequestPath(HttpServletRequest req) {
+        String buf = req.getRequestURI();
+        if (req.getQueryString() != null) {
+            buf += "?" + req.getQueryString();
+        }
+        return buf;
     }
 }
