@@ -1,7 +1,6 @@
 package ru.javawebinar.topjava.dao;
 
 import ru.javawebinar.topjava.model.Meal;
-import ru.javawebinar.topjava.util.IdProvider;
 
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -10,14 +9,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class InMemoryMealDao implements MealDao {
-    private final Map<Integer, Meal> meals = new ConcurrentHashMap<>(); // ... в таблице списка еды (в памяти и БЕЗ учета пользователя) ...
+    private final Map<Integer, Meal> meals = new ConcurrentHashMap<>();
+    private static final AtomicInteger counter = new AtomicInteger();
 
     public InMemoryMealDao() {
-        /*
-         * 1.2.1 Список еды захардкодить (те проинициализировать в коде, желательно чтобы в проекте инициализация была только в одном месте).
-         */
         Arrays.asList(
                 new Meal(0, LocalDateTime.of(2020, Month.JANUARY, 30, 10, 0), "Завтрак", 500),
                 new Meal(1, LocalDateTime.of(2020, Month.JANUARY, 30, 13, 0), "Обед", 1000),
@@ -41,17 +39,12 @@ public class InMemoryMealDao implements MealDao {
 
     @Override
     public Meal add(Meal meal) {
-        final Integer id = IdProvider.nextId();
-        final Meal newMeal = new Meal(id, meal.getDateTime(), meal.getDescription(), meal.getCalories());
-        meals.put(id, newMeal);
-        return newMeal;
+        return meals.computeIfAbsent(counter.getAndIncrement(), (k) -> new Meal(k, meal.getDateTime(), meal.getDescription(), meal.getCalories()));
     }
 
     @Override
     public Meal update(Meal meal) {
-        if (!meals.containsKey(meal.getId())) return null;
-        meals.put(meal.getId(), meal);
-        return meal;
+        return meals.computeIfPresent(meal.getId(), (k, v) -> meal);
     }
 
     @Override

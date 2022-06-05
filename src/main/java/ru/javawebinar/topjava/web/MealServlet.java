@@ -22,7 +22,7 @@ public class MealServlet extends HttpServlet {
 
     private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
-    static final int CALORIES_PER_DAY = 2000; // 1.2.1 ... Норму калорий (caloriesPerDay) сделать в коде константой.
+    static final int CALORIES_PER_DAY = 2000; // 1.2.1. calories threshold (caloriesPerDay) should be constant
 
     static final String INSERT_OR_EDIT_VIEW = "meal.jsp";
 
@@ -33,9 +33,8 @@ public class MealServlet extends HttpServlet {
     private MealDao mealDao;
 
     @Override
-    public void init() throws ServletException {
+    public void init() {
         mealDao = new InMemoryMealDao();
-        super.init();
     }
 
     @Override
@@ -70,8 +69,8 @@ public class MealServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        req.setCharacterEncoding("UTF-8"); // ... Проблемы с кодировкой в POST (кракозябры). ...
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        req.setCharacterEncoding("UTF-8"); // fix problem with cyrillic charsets (кракозябры).
 
         log.info("{} {}", req.getMethod(), this.getRequestPath(req));
 
