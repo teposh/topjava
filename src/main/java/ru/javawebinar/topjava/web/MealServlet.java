@@ -43,16 +43,19 @@ public class MealServlet extends HttpServlet {
         log.info("{} {}", req.getMethod(), this.getRequestPath(req));
         switch (action) {
             case "create": {
+                log.info("-> create");
                 req.getRequestDispatcher(INSERT_OR_EDIT_VIEW).forward(req, resp);
                 break;
             }
             case "update": {
+                log.info("-> update");
                 final int id = Integer.parseInt(req.getParameter("id"));
                 req.setAttribute("meal", mealDao.get(id));
                 req.getRequestDispatcher(INSERT_OR_EDIT_VIEW).forward(req, resp);
                 break;
             }
             case "delete": {
+                log.info("-> delete");
                 final int id = Integer.parseInt(req.getParameter("id"));
                 log.info("DELETE {}", mealDao.get(id));
                 mealDao.delete(id);
@@ -60,6 +63,7 @@ public class MealServlet extends HttpServlet {
                 break;
             }
             default: {
+                log.info("-> default");
                 req.setAttribute("meals", MealsUtil.filteredByStreams(mealDao.getAll(), LocalTime.MIN, LocalTime.MAX, CALORIES_PER_DAY));
                 req.setAttribute("formatter", dateTimeFormatter);
                 req.getRequestDispatcher(INDEX_VIEW).forward(req, resp);
