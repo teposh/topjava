@@ -15,9 +15,11 @@ import java.util.stream.Collectors;
 
 @Repository
 public class InMemoryUserRepository implements UserRepository {
-    private static final Logger log = LoggerFactory.getLogger(InMemoryUserRepository.class);
+    private static final Comparator<User> EMAIL_COMPARATOR = Comparator.comparing(User::getEmail);
 
-    private static final Comparator<User> comparator = Comparator.comparing(User::getName);
+    private static final Comparator<User> NAME_COMPARATOR = Comparator.comparing(User::getName);
+
+    private static final Logger log = LoggerFactory.getLogger(InMemoryUserRepository.class);
 
     private final Map<Integer, User> repository = new ConcurrentHashMap<>();
 
@@ -39,7 +41,7 @@ public class InMemoryUserRepository implements UserRepository {
             return user;
         }
 
-        return repository.computeIfPresent(user.getId(), (id, oldMeal) -> user);
+        return repository.computeIfPresent(user.getId(), (id, oldUser) -> user);
     }
 
     @Override
@@ -51,12 +53,15 @@ public class InMemoryUserRepository implements UserRepository {
     @Override
     public List<User> getAll() {
         log.info("getAll");
-        return repository.values().stream().sorted(comparator).collect(Collectors.toList());
+        return repository.values().stream().sorted(NAME_COMPARATOR.thenComparing(EMAIL_COMPARATOR))
+                .collect(Collectors.toList());
     }
 
     @Override
     public User getByEmail(String email) {
         log.info("getByEmail {}", email);
-        return getAll().stream().filter(u -> u.getEmail().equals(email)).findFirst().orElse(null);
+        final String lowerCaseEmail = email.toLowerCase();
+        return getAll().stream().filter(u -> u.getEmail().toLowerCase().equals(lowerCaseEmail))
+                .findFirst().orElse(null);
     }
 }

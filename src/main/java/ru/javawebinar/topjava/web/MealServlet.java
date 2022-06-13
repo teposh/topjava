@@ -20,12 +20,19 @@ import java.util.Objects;
 public class MealServlet extends HttpServlet {
     private static final Logger log = LoggerFactory.getLogger(MealServlet.class);
 
+    private ClassPathXmlApplicationContext ctx;
+
     private MealRestController mealRestController;
 
     @Override
     public void init() {
-        ClassPathXmlApplicationContext appCtx = new ClassPathXmlApplicationContext("spring/spring-app.xml");
-        mealRestController = appCtx.getBean(MealRestController.class);
+        ctx = new ClassPathXmlApplicationContext("spring/spring-app.xml");
+        mealRestController = ctx.getBean(MealRestController.class);
+    }
+
+    @Override
+    public void destroy() {
+        ctx.close();
     }
 
     @Override
@@ -38,8 +45,14 @@ public class MealServlet extends HttpServlet {
                 request.getParameter("description"),
                 Integer.parseInt(request.getParameter("calories")));
 
-        log.info(meal.isNew() ? "Create {}" : "Update {}", meal);
-        mealRestController.create(meal);
+        if (meal.isNew()) {
+            log.info("Create {}", meal);
+            mealRestController.create(meal);
+        } else {
+            log.info("Update {}", meal);
+            mealRestController.update(meal, meal.getId());
+        }
+
         response.sendRedirect("meals");
     }
 
@@ -65,11 +78,11 @@ public class MealServlet extends HttpServlet {
             case "all":
             default:
                 log.info("getAll");
-                processDateTimeFilter(request);
-                request.setAttribute("meals", mealRestController.getAll(
-                        (LocalDate) request.getAttribute("dateFrom"), (LocalDate) request.getAttribute("dateTo"),
-                        (LocalTime) request.getAttribute("timeFrom"), (LocalTime) request.getAttribute("timeTo")
-                ));
+                final LocalDate dateFrom = isSet(request.getParameter("dateFrom")) ? LocalDate.parse(request.getParameter("dateFrom")) : null;
+                final LocalTime timeFrom = isSet(request.getParameter("timeFrom")) ? LocalTime.parse(request.getParameter("timeFrom")) : null;
+                final LocalDate dateTo = isSet(request.getParameter("dateTo")) ? LocalDate.parse(request.getParameter("dateTo")) : null;
+                final LocalTime timeTo = isSet(request.getParameter("timeTo")) ? LocalTime.parse(request.getParameter("timeTo")) : null;
+                request.setAttribute("meals", mealRestController.getAllFiltered(dateFrom, dateTo, timeFrom, timeTo));
                 request.getRequestDispatcher("/meals.jsp").forward(request, response);
                 break;
         }
@@ -80,20 +93,7 @@ public class MealServlet extends HttpServlet {
         return Integer.parseInt(paramId);
     }
 
-    private void processDateTimeFilter(HttpServletRequest request) {
-        final String dateFrom = request.getParameter("dateFrom") != null ? request.getParameter("dateFrom") : "";
-        final String timeFrom = request.getParameter("timeFrom") != null ? request.getParameter("timeFrom") : "";
-
-        final String dateTo = request.getParameter("dateTo") != null ? request.getParameter("dateTo") : "";
-        final String timeTo = request.getParameter("timeTo") != null ? request.getParameter("timeTo") : "";
-
-        request.setAttribute("dateFrom", dateFrom.equals("") ? null : LocalDate.parse(dateFrom));
-        request.setAttribute("timeFrom", timeFrom.equals("") ? LocalTime.MIN : LocalTime.parse(timeFrom));
-
-        request.setAttribute("dateTo", dateTo.equals("") ? null : LocalDate.parse(dateTo));
-        request.setAttribute("timeTo", timeTo.equals("") ? LocalTime.MAX : LocalTime.parse(timeTo));
-
-        log.info("{}, {}, {}, {}", request.getAttribute("dateFrom"), request.getAttribute("dateTo"),
-                request.getAttribute("timeFrom"), request.getAttribute("timeTo"));
+    private boolean isSet(String val) {
+        return val != null && !val.equals("");
     }
 }

@@ -6,8 +6,6 @@ import ru.javawebinar.topjava.repository.MealRepository;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static ru.javawebinar.topjava.util.ValidationUtil.checkNotFoundWithId;
 
@@ -35,11 +33,8 @@ public class MealService {
         return repository.getAll(userId);
     }
 
-    public List<Meal> getAll(int userId, LocalDate dateFrom, LocalDate dateTo) {
-        Stream<Meal> stream = repository.getAll(userId).stream();
-        if (dateFrom != null) stream = stream.filter(m -> m.getDate().isAfter(dateFrom));
-        if (dateTo != null) stream = stream.filter(m -> m.getDate().isBefore(dateTo));
-        return stream.collect(Collectors.toList());
+    public List<Meal> getAllFilteredByDates(int userId, LocalDate dateFrom, LocalDate dateTo) {
+        return repository.getAllFilteredByDates(userId, dateFrom, dateTo);
     }
 
     public void update(Meal meal, int userId) {

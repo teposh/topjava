@@ -22,10 +22,10 @@
     <hr/>
     <h2>Meals</h2>
     <form method="get">
-        <input name="dateFrom" type="date" value="${dateFrom}"/>
-        <input name="dateTo" type="date" value="${dateTo}"/>
-        <input name="timeFrom" type="time" value="${timeFrom}"/>
-        <input name="timeTo" type="time" value="${timeTo}"/>
+        <input name="dateFrom" type="date" value="${param.dateFrom}"/>
+        <input name="dateTo" type="date" value="${param.dateTo}"/>
+        <input name="timeFrom" type="time" value="${param.timeFrom}"/>
+        <input name="timeTo" type="time" value="${param.timeTo}"/>
         <input type="submit">
     </form>
     <a href="meals?action=create">Add Meal</a>

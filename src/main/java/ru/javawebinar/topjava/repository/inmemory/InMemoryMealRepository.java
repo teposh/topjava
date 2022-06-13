@@ -5,6 +5,7 @@ import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.repository.MealRepository;
 import ru.javawebinar.topjava.util.MealsUtil;
 
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -22,10 +23,13 @@ public class InMemoryMealRepository implements MealRepository {
 
     {
         MealsUtil.meals.forEach(m -> this.save(m, 1));
+        MealsUtil.meals2.forEach(m -> this.save(m, 2));
     }
 
     @Override
     public Meal save(Meal meal, int userId) {
+        repository.computeIfAbsent(userId, k -> new ConcurrentHashMap<>());
+
         if (meal.isNew()) {
             meal.setId(counter.incrementAndGet());
             getUserMeals(userId).put(meal.getId(), meal);
@@ -47,10 +51,18 @@ public class InMemoryMealRepository implements MealRepository {
 
     @Override
     public List<Meal> getAll(int userId) {
-        return getUserMeals(userId).values().stream().sorted(comparator).collect(Collectors.toList());
+        return getUserMeals(userId).values().stream().sorted(comparator.reversed()).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Meal> getAllFilteredByDates(int userId, LocalDate dateFrom, LocalDate dateTo) {
+        return getUserMeals(userId).values().stream()
+                .filter(m -> (dateFrom == null || m.getDate().compareTo(dateFrom) >= 0) && (dateTo == null || m.getDate().compareTo(dateTo) <= 0))
+                .sorted(comparator.reversed())
+                .collect(Collectors.toList());
     }
 
     private Map<Integer, Meal> getUserMeals(int userId) {
-        return repository.computeIfAbsent(userId, k -> new HashMap<>());
+        return repository.getOrDefault(userId, new HashMap<>());
     }
 }
