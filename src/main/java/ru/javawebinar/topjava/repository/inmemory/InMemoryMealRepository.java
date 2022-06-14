@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 @Repository
 public class InMemoryMealRepository implements MealRepository {
-    private static final Comparator<Meal> comparator = Comparator.comparing(Meal::getDateTime);
+    private static final Comparator<Meal> COMPARATOR = Comparator.comparing(Meal::getDateTime);
 
     private final Map<Integer, Map<Integer, Meal>> repository = new ConcurrentHashMap<>();
     private final AtomicInteger counter = new AtomicInteger(0);
@@ -69,7 +69,7 @@ public class InMemoryMealRepository implements MealRepository {
         Map<Integer, Meal> userMeals = repository.get(userId);
         if (userMeals == null) return new ArrayList<>();
         return userMeals.values().stream()
-                .filter(filter).sorted(comparator.reversed())
+                .filter(filter).sorted(COMPARATOR.reversed())
                 .collect(Collectors.toList());
     }
 }
