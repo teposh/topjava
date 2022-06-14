@@ -53,15 +53,17 @@ public class InMemoryUserRepository implements UserRepository {
     @Override
     public List<User> getAll() {
         log.info("getAll");
-        return repository.values().stream().sorted(NAME_COMPARATOR.thenComparing(EMAIL_COMPARATOR))
+        return repository.values().stream()
+                .sorted(NAME_COMPARATOR.thenComparing(EMAIL_COMPARATOR))
                 .collect(Collectors.toList());
     }
 
     @Override
     public User getByEmail(String email) {
         log.info("getByEmail {}", email);
-        final String lowerCaseEmail = email.toLowerCase();
-        return getAll().stream().filter(u -> u.getEmail().toLowerCase().equals(lowerCaseEmail))
-                .findFirst().orElse(null);
+        return getAll().stream()
+                .filter(u -> u.getEmail().equalsIgnoreCase(email))
+                .findFirst()
+                .orElse(null);
     }
 }

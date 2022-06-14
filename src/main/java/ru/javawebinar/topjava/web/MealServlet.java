@@ -3,6 +3,7 @@ package ru.javawebinar.topjava.web;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.util.ObjectUtils;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.web.meal.MealRestController;
 
@@ -78,10 +79,14 @@ public class MealServlet extends HttpServlet {
             case "all":
             default:
                 log.info("getAll");
-                final LocalDate dateFrom = isSet(request.getParameter("dateFrom")) ? LocalDate.parse(request.getParameter("dateFrom")) : null;
-                final LocalTime timeFrom = isSet(request.getParameter("timeFrom")) ? LocalTime.parse(request.getParameter("timeFrom")) : null;
-                final LocalDate dateTo = isSet(request.getParameter("dateTo")) ? LocalDate.parse(request.getParameter("dateTo")) : null;
-                final LocalTime timeTo = isSet(request.getParameter("timeTo")) ? LocalTime.parse(request.getParameter("timeTo")) : null;
+                final LocalDate dateFrom = ObjectUtils.isEmpty(request.getParameter("dateFrom")) ? null
+                        : LocalDate.parse(request.getParameter("dateFrom"));
+                final LocalTime timeFrom = ObjectUtils.isEmpty(request.getParameter("timeFrom")) ? null
+                        : LocalTime.parse(request.getParameter("timeFrom"));
+                final LocalDate dateTo = ObjectUtils.isEmpty(request.getParameter("dateTo")) ? null
+                        : LocalDate.parse(request.getParameter("dateTo"));
+                final LocalTime timeTo = ObjectUtils.isEmpty(request.getParameter("timeTo")) ? null
+                        : LocalTime.parse(request.getParameter("timeTo"));
                 request.setAttribute("meals", mealRestController.getAllFiltered(dateFrom, dateTo, timeFrom, timeTo));
                 request.getRequestDispatcher("/meals.jsp").forward(request, response);
                 break;
@@ -91,9 +96,5 @@ public class MealServlet extends HttpServlet {
     private int getId(HttpServletRequest request) {
         String paramId = Objects.requireNonNull(request.getParameter("id"));
         return Integer.parseInt(paramId);
-    }
-
-    private boolean isSet(String val) {
-        return val != null && !val.equals("");
     }
 }
