@@ -27,10 +27,8 @@ public class JdbcMealRepository implements MealRepository {
     @Autowired
     public JdbcMealRepository(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
-
         this.insertMeal = new SimpleJdbcInsert(jdbcTemplate).withTableName("meals")
                 .usingGeneratedKeyColumns("id");
-
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -51,7 +49,6 @@ public class JdbcMealRepository implements MealRepository {
                         "WHERE id=:id AND user_id=:user_id", map) == 0) {
             return null;
         }
-
         return meal;
     }
 
@@ -76,7 +73,7 @@ public class JdbcMealRepository implements MealRepository {
 
     @Override
     public List<Meal> getBetweenHalfOpen(LocalDateTime startDateTime, LocalDateTime endDateTime, int userId) {
-        final String sql = "SELECT * FROM meals WHERE date_time BETWEEN ? AND ? AND user_id = ? " +
+        final String sql = "SELECT * FROM meals WHERE date_time >= ? and date_time < ? AND user_id = ? " +
                 "ORDER BY date_time DESC";
         return jdbcTemplate.query(sql, ROW_MAPPER, startDateTime, endDateTime, userId);
     }
