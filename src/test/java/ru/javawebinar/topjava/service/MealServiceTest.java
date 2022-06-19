@@ -111,7 +111,7 @@ public class MealServiceTest {
         Meal newMeal = getNew();
         newMeal.setId(created.getId());
         assertMatch(created, newMeal);
-        assertMatch(newMeal, mealService.get(created.getId(), USER_ID));
+        assertMatch(mealService.get(created.getId(), USER_ID), newMeal);
     }
 
     @Test
