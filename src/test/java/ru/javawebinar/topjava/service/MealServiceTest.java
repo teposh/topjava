@@ -1,7 +1,14 @@
 package ru.javawebinar.topjava.service;
 
+import org.junit.AfterClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.test.context.ContextConfiguration;
@@ -10,9 +17,12 @@ import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.context.junit4.SpringRunner;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
+import ru.javawebinar.topjava.web.meal.MealRestController;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.junit.Assert.assertThrows;
 import static ru.javawebinar.topjava.MealTestData.*;
@@ -26,9 +36,35 @@ import static ru.javawebinar.topjava.UserTestData.USER_ID;
 @RunWith(SpringRunner.class)
 @Sql(scripts = "classpath:db/populateDB.sql", config = @SqlConfig(encoding = "UTF-8"))
 public class MealServiceTest {
+    private static final Logger log = LoggerFactory.getLogger(MealRestController.class);
+
+    private final static Map<String, Long> results = new ConcurrentHashMap<>();
+
+    @Rule
+    public final TestRule watcher = new TestWatcher() {
+        @Override
+        protected void starting(Description description) {
+            final String methodName = description.getMethodName();
+            results.put(methodName, System.currentTimeMillis());
+            super.starting(description);
+        }
+
+        @Override
+        protected void finished(Description description) {
+            final String methodName = description.getMethodName();
+            results.merge(methodName, System.currentTimeMillis(), (oldVal, newVal) -> newVal - oldVal);
+            log.info("{} -> {} ms", methodName, results.get(methodName));
+            super.finished(description);
+        }
+    };
 
     @Autowired
     private MealService service;
+
+    @AfterClass
+    public static void afterClass() {
+        results.forEach((key, value) -> log.info("{} -> {} ms", key, value));
+    }
 
     @Test
     public void delete() {
