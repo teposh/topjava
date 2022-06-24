@@ -11,7 +11,6 @@ import static java.time.LocalDateTime.of;
 import static ru.javawebinar.topjava.model.AbstractBaseEntity.START_SEQ;
 
 public class MealTestData {
-    // we don't want to compare meals by the user property because that property is ORM's lazy initialized.
     public static final MatcherFactory.Matcher<Meal> MEAL_MATCHER = MatcherFactory.usingIgnoringFieldsComparator("user");
 
     public static final int NOT_FOUND = 10;

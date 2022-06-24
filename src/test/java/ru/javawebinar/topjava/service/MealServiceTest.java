@@ -3,8 +3,8 @@ package ru.javawebinar.topjava.service;
 import org.junit.AfterClass;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Stopwatch;
 import org.junit.rules.TestRule;
-import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -17,12 +17,11 @@ import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.context.junit4.SpringRunner;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
-import ru.javawebinar.topjava.web.meal.MealRestController;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 import static org.junit.Assert.assertThrows;
 import static ru.javawebinar.topjava.MealTestData.*;
@@ -36,25 +35,32 @@ import static ru.javawebinar.topjava.UserTestData.USER_ID;
 @RunWith(SpringRunner.class)
 @Sql(scripts = "classpath:db/populateDB.sql", config = @SqlConfig(encoding = "UTF-8"))
 public class MealServiceTest {
-    private static final Logger log = LoggerFactory.getLogger(MealRestController.class);
+    private static final Logger log = LoggerFactory.getLogger(MealServiceTest.class);
 
-    private final static Map<String, Long> results = new ConcurrentHashMap<>();
+    private static final class TestResult {
+        final String methodName;
+        final Long durationMillis;
 
-    @Rule
-    public final TestRule watcher = new TestWatcher() {
-        @Override
-        protected void starting(Description description) {
-            final String methodName = description.getMethodName();
-            results.put(methodName, System.currentTimeMillis());
-            super.starting(description);
+        TestResult(final String methodName, final Long durationMillis) {
+            this.methodName = methodName;
+            this.durationMillis = durationMillis;
         }
 
         @Override
-        protected void finished(Description description) {
-            final String methodName = description.getMethodName();
-            results.merge(methodName, System.currentTimeMillis(), (oldVal, newVal) -> newVal - oldVal);
-            log.info("{} -> {} ms", methodName, results.get(methodName));
-            super.finished(description);
+        public String toString() {
+            return this.methodName + " -> " + this.durationMillis + " ms";
+        }
+    }
+
+    private static final List<TestResult> testResults = new LinkedList<TestResult>();
+
+    @Rule
+    public final TestRule watcher = new Stopwatch() {
+        @Override
+        protected void finished(long nanos, Description description) {
+            final TestResult result = new TestResult(description.getMethodName(), nanos / 1_000_000);
+            testResults.add(result);
+            log.info("{}", result);
         }
     };
 
@@ -63,7 +69,23 @@ public class MealServiceTest {
 
     @AfterClass
     public static void afterClass() {
-        results.forEach((key, value) -> log.info("{} -> {} ms", key, value));
+        final int maxMethodName = testResults.stream()
+                .mapToInt(tr -> tr.methodName.length())
+                .max()
+                .orElse(20);
+
+        final int maxTestDuration = (testResults.stream()
+                .mapToInt(tr -> tr.durationMillis.toString().length())
+                .max()
+                .orElse(5));
+
+        final String format = "%" + maxMethodName + "s -> %" + maxTestDuration + "s ms" + System.lineSeparator();
+
+        final StringBuilder sb = new StringBuilder(System.lineSeparator());
+
+        testResults.forEach(tr -> sb.append(String.format(format, tr.methodName, tr.durationMillis.toString())));
+
+        log.info("{}", sb);
     }
 
     @Test
