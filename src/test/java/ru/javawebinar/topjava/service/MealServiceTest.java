@@ -22,6 +22,7 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertThrows;
 import static ru.javawebinar.topjava.MealTestData.*;
@@ -37,30 +38,31 @@ import static ru.javawebinar.topjava.UserTestData.USER_ID;
 public class MealServiceTest {
     private static final Logger log = LoggerFactory.getLogger(MealServiceTest.class);
 
-    private static final class TestResult {
-        final String methodName;
-        final Long durationMillis;
+    private static final String format = "%25s -> %3s ms";
 
-        TestResult(final String methodName, final Long durationMillis) {
-            this.methodName = methodName;
-            this.durationMillis = durationMillis;
-        }
+    private static final String ANSI_RED = "\u001B[31m";
+    private static final String ANSI_RESET = "\u001B[0m";
+    private static final String ANSI_GREEN = "\u001B[32m";
 
-        @Override
-        public String toString() {
-            return this.methodName + " -> " + this.durationMillis + " ms";
-        }
-    }
-
-    private static final List<TestResult> testResults = new LinkedList<TestResult>();
+    private static final List<String> testResults = new LinkedList<>();
 
     @Rule
     public final TestRule watcher = new Stopwatch() {
         @Override
-        protected void finished(long nanos, Description description) {
-            final TestResult result = new TestResult(description.getMethodName(), nanos / 1_000_000);
-            testResults.add(result);
-            log.info("{}", result);
+        protected void succeeded(long nanos, Description description) {
+            printAndLog(String.format(ANSI_GREEN + format + ANSI_RESET, description.getMethodName(),
+                    TimeUnit.NANOSECONDS.toMillis(nanos)));
+        }
+
+        @Override
+        protected void failed(long nanos, Throwable e, Description description) {
+            printAndLog(String.format(ANSI_RED + format + ANSI_RESET, description.getMethodName(),
+                    TimeUnit.NANOSECONDS.toMillis(nanos)));
+        }
+
+        private void printAndLog(String s) {
+            testResults.add(s);
+            log.info("{}", s);
         }
     };
 
@@ -69,23 +71,7 @@ public class MealServiceTest {
 
     @AfterClass
     public static void afterClass() {
-        final int maxMethodName = testResults.stream()
-                .mapToInt(tr -> tr.methodName.length())
-                .max()
-                .orElse(20);
-
-        final int maxTestDuration = (testResults.stream()
-                .mapToInt(tr -> tr.durationMillis.toString().length())
-                .max()
-                .orElse(5));
-
-        final String format = "%" + maxMethodName + "s -> %" + maxTestDuration + "s ms" + System.lineSeparator();
-
-        final StringBuilder sb = new StringBuilder(System.lineSeparator());
-
-        testResults.forEach(tr -> sb.append(String.format(format, tr.methodName, tr.durationMillis.toString())));
-
-        log.info("{}", sb);
+        log.info("{}", String.join(System.lineSeparator(), testResults));
     }
 
     @Test
