@@ -1,6 +1,5 @@
 package ru.javawebinar.topjava.repository.jpa;
 
-import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import ru.javawebinar.topjava.model.Meal;
@@ -12,28 +11,33 @@ import javax.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static ru.javawebinar.topjava.util.ValidationUtil.checkNotFoundWithId;
-
 @Repository
-@Transactional
+@Transactional(readOnly = true)
 public class JpaMealRepository implements MealRepository {
     @PersistenceContext
     private EntityManager em;
 
     @Override
+    @Transactional
     public Meal save(Meal meal, int userId) {
-        meal.setUser(em.getReference(User.class, userId));
         if (meal.isNew()) {
+            meal.setUser(em.getReference(User.class, userId));
             em.persist(meal);
             return meal;
-        } else {
-            Meal currentMeal = get(meal.getId(), userId);
-            checkNotFoundWithId(currentMeal, meal.getId());
+        }
+
+        Meal currentMeal = get(meal.getId(), userId);
+
+        if (currentMeal != null && currentMeal.getUser().getId() == userId) {
+            meal.setUser(em.getReference(User.class, userId));
             return em.merge(meal);
         }
+
+        return null;
     }
 
     @Override
+    @Transactional
     public boolean delete(int id, int userId) {
         return em.createNamedQuery(Meal.DELETE)
                 .setParameter(1, id)
@@ -43,11 +47,10 @@ public class JpaMealRepository implements MealRepository {
 
     @Override
     public Meal get(int id, int userId) {
-        List<Meal> meals = em.createNamedQuery(Meal.GET, Meal.class)
-                .setParameter(1, id)
-                .setParameter(2, userId)
-                .getResultList();
-        return DataAccessUtils.singleResult(meals);
+        Meal meal = em.find(Meal.class, id);
+        return meal == null || meal.getUser() == null || meal.getUser().getId() != userId
+                ? null
+                : meal;
     }
 
     @Override
