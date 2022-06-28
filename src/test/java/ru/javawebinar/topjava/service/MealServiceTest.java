@@ -1,6 +1,7 @@
 package ru.javawebinar.topjava.service;
 
 import org.junit.AfterClass;
+import org.junit.AssumptionViolatedException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Stopwatch;
@@ -38,16 +39,21 @@ import static ru.javawebinar.topjava.UserTestData.USER_ID;
 public class MealServiceTest {
     private static final Logger log = LoggerFactory.getLogger(MealServiceTest.class);
 
-    private static final String format = "%25s -> %3s ms";
-
-    private static final String ANSI_RED = "\u001B[31m";
-    private static final String ANSI_RESET = "\u001B[0m";
-    private static final String ANSI_GREEN = "\u001B[32m";
-
     private static final List<String> testResults = new LinkedList<>();
 
     @Rule
     public final TestRule watcher = new Stopwatch() {
+        private static final String format = "%25s -> %3s ms";
+
+        private static final String ANSI_RED = "\u001B[31m";
+        private static final String ANSI_RESET = "\u001B[0m";
+        private static final String ANSI_GREEN = "\u001B[32m";
+
+        @Override
+        protected void skipped(long nanos, AssumptionViolatedException e, Description description) {
+            printAndLog(String.format(format, description.getMethodName(), TimeUnit.NANOSECONDS.toMillis(nanos)));
+        }
+
         @Override
         protected void succeeded(long nanos, Description description) {
             printAndLog(String.format(ANSI_GREEN + format + ANSI_RESET, description.getMethodName(),
