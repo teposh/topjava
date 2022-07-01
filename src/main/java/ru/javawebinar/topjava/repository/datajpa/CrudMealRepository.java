@@ -25,4 +25,7 @@ public interface CrudMealRepository extends JpaRepository<Meal, Integer> {
                                                                             LocalDateTime endDateTime,
                                                                             int userId,
                                                                             Sort sort);
+
+    @Query("SELECT m FROM Meal m LEFT JOIN FETCH m.user WHERE m.id = ?1 AND m.user.id = ?2")
+    Meal getWithUserByIdAndUserId(int id, int userId);
 }

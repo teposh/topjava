@@ -50,4 +50,9 @@ public class DataJpaMealRepository implements MealRepository {
         return crudRepository.getAllByDateTimeGreaterThanEqualAndDateTimeLessThanAndUserId(startDateTime, endDateTime,
                 userId, SORT_DATETIME);
     }
+
+    @Override
+    public Meal getWithUser(int id, int userId) {
+        return crudRepository.getWithUserByIdAndUserId(id, userId);
+    }
 }
