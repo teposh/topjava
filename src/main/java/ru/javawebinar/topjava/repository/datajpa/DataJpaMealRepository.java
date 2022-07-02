@@ -1,7 +1,7 @@
 package ru.javawebinar.topjava.repository.datajpa;
 
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.repository.MealRepository;
 
@@ -10,8 +10,6 @@ import java.util.List;
 
 @Repository
 public class DataJpaMealRepository implements MealRepository {
-    private static final Sort SORT_DATETIME = Sort.by(Sort.Direction.DESC, "dateTime");
-
     private final CrudMealRepository crudRepository;
     private final CrudUserRepository userRepository;
 
@@ -21,11 +19,11 @@ public class DataJpaMealRepository implements MealRepository {
     }
 
     @Override
+    @Transactional
     public Meal save(Meal meal, int userId) {
         meal.setUser(userRepository.getReferenceById(userId));
         if (meal.isNew() || get(meal.id(), userId) != null) {
-            crudRepository.save(meal);
-            return meal;
+            return crudRepository.save(meal);
         }
         return null;
     }
@@ -37,22 +35,21 @@ public class DataJpaMealRepository implements MealRepository {
 
     @Override
     public Meal get(int id, int userId) {
-        return crudRepository.getByIdAndUserId(id, userId);
+        return crudRepository.get(id, userId);
     }
 
     @Override
     public List<Meal> getAll(int userId) {
-        return crudRepository.getAllByUserId(userId, SORT_DATETIME);
+        return crudRepository.getAll(userId);
     }
 
     @Override
     public List<Meal> getBetweenHalfOpen(LocalDateTime startDateTime, LocalDateTime endDateTime, int userId) {
-        return crudRepository.getAllByDateTimeGreaterThanEqualAndDateTimeLessThanAndUserId(startDateTime, endDateTime,
-                userId, SORT_DATETIME);
+        return crudRepository.getBetweenHalfOpen(startDateTime, endDateTime, userId);
     }
 
     @Override
     public Meal getWithUser(int id, int userId) {
-        return crudRepository.getWithUserByIdAndUserId(id, userId);
+        return crudRepository.getWithUser(id, userId);
     }
 }
