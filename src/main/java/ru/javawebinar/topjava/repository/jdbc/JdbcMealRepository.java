@@ -14,7 +14,7 @@ import ru.javawebinar.topjava.repository.MealRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public abstract class JdbcMealRepository implements MealRepository {
+public abstract class JdbcMealRepository<T> implements MealRepository {
     private static final RowMapper<Meal> ROW_MAPPER = BeanPropertyRowMapper.newInstance(Meal.class);
 
     private final JdbcTemplate jdbcTemplate;
@@ -82,5 +82,5 @@ public abstract class JdbcMealRepository implements MealRepository {
     }
 
     // easiest solution is using timestamp for any database
-    abstract Object toDateTimeObject(LocalDateTime dateTime);
+    abstract T toDateTimeObject(LocalDateTime dateTime);
 }
