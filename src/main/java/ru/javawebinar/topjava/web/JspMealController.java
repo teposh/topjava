@@ -7,6 +7,7 @@ import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.service.MealService;
 import ru.javawebinar.topjava.util.MealsUtil;
@@ -25,6 +26,7 @@ import static ru.javawebinar.topjava.util.ValidationUtil.assureIdConsistent;
 import static ru.javawebinar.topjava.util.ValidationUtil.checkNew;
 
 @Controller
+@RequestMapping("/meals")
 public class JspMealController {
     private static final Logger log = LoggerFactory.getLogger(JspMealController.class);
 
@@ -34,7 +36,7 @@ public class JspMealController {
         this.mealService = mealService;
     }
 
-    @GetMapping("/meals")
+    @GetMapping
     public String indexView(HttpServletRequest request) {
         LocalDate startDate = parseLocalDate(request.getParameter("startDate"));
         LocalDate endDate = parseLocalDate(request.getParameter("endDate"));
@@ -51,25 +53,25 @@ public class JspMealController {
         return "meals";
     }
 
-    @GetMapping("/meal-create")
+    @GetMapping("/create")
     public String createView(Model model) {
         model.addAttribute("meal", new Meal(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES), "", 1000));
         return "mealForm";
     }
 
-    @GetMapping("/meal-update")
+    @GetMapping("/update")
     public String updateView(HttpServletRequest request) {
         request.setAttribute("meal", mealService.get(getId(request), SecurityUtil.authUserId()));
         return "mealForm";
     }
 
-    @GetMapping("/meal-delete")
+    @GetMapping("/delete")
     public String deleteView(HttpServletRequest request) {
         mealService.delete(getId(request), SecurityUtil.authUserId());
         return "redirect:/meals";
     }
 
-    @PostMapping("/meals")
+    @PostMapping
     public String createOrUpdate(HttpServletRequest request) throws UnsupportedEncodingException {
         request.setCharacterEncoding("UTF-8");
 

@@ -17,6 +17,7 @@ import ru.javawebinar.topjava.ActiveDbProfileResolver;
 import ru.javawebinar.topjava.TimingRules;
 
 import static org.junit.Assert.assertThrows;
+import static ru.javawebinar.topjava.Profiles.JDBC;
 import static ru.javawebinar.topjava.util.ValidationUtil.getRootCause;
 
 @ContextConfiguration({
@@ -48,6 +49,6 @@ public abstract class AbstractServiceTest {
     }
 
     protected boolean isJdbcProfile() {
-        return this.environment.acceptsProfiles(Profiles.of("jdbc"));
+        return this.environment.acceptsProfiles(Profiles.of(JDBC));
     }
 }

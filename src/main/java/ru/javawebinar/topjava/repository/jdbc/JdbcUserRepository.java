@@ -14,16 +14,13 @@ import ru.javawebinar.topjava.model.Role;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.repository.UserRepository;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
-import javax.validation.Validation;
-import javax.validation.Validator;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
 @Repository
-public class JdbcUserRepository implements UserRepository {
+@Transactional(readOnly = true)
+public class JdbcUserRepository extends AbstractJdbcRepository<User> implements UserRepository {
     private final JdbcTemplate jdbcTemplate;
 
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -45,29 +42,28 @@ public class JdbcUserRepository implements UserRepository {
     public User save(User user) {
         BeanPropertySqlParameterSource parameterSource = new BeanPropertySqlParameterSource(user);
 
-        Set<ConstraintViolation<User>> violations = getValidator().validate(user);
-        if (!violations.isEmpty()) {
-            throw new ConstraintViolationException(violations);
-        }
+        validate(user);
 
         if (user.isNew()) {
             Number newKey = insertUser.executeAndReturnKey(parameterSource);
             user.setId(newKey.intValue());
-            insertUserRoles(user.getRoles(), user.getId()); // this is not possible that id will be null at this point.
         } else {
-            int affectedRows = namedParameterJdbcTemplate.update("""
-                       UPDATE users SET name=:name, email=:email, password=:password,
-                       registered=:registered, enabled=:enabled, calories_per_day=:caloriesPerDay WHERE id=:id
-                    """, parameterSource);
-            if (affectedRows == 0) return null;
+            if (namedParameterJdbcTemplate.update("""
+                       UPDATE users SET name = :name, email = :email, password = :password, registered = :registered,
+                       enabled = :enabled, calories_per_day = :caloriesPerDay WHERE id = :id
+                    """, parameterSource) == 0) {
+                return null;
+            }
             jdbcTemplate.update("DELETE FROM user_roles WHERE user_id = ?", user.getId());
-            insertUserRoles(user.getRoles(), user.getId());
         }
+
+        insertUserRoles(user.getRoles(), user.getId());
 
         return user;
     }
 
     @Override
+    @Transactional
     public boolean delete(int id) {
         return jdbcTemplate.update("DELETE FROM users WHERE id=?", id) != 0;
     }
@@ -150,9 +146,5 @@ public class JdbcUserRepository implements UserRepository {
                     ps.setInt(1, userId);
                     ps.setString(2, argument.toString());
                 });
-    }
-
-    private Validator getValidator() {
-        return Validation.buildDefaultValidatorFactory().getValidator();
     }
 }
