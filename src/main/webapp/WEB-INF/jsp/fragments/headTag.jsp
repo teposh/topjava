@@ -5,5 +5,6 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title><spring:message code="app.title"/></title>
-    <link rel="stylesheet" href="/topjava/resources/css/style.css">
+    <!-- https://studyeasy.org/general/get-base-url-using-context-path-on-jsp-page/ -->
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/style.css">
 </head>

@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.javawebinar.topjava.model.Role;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.repository.UserRepository;
+import ru.javawebinar.topjava.util.ValidationUtil;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -20,7 +21,7 @@ import java.util.*;
 
 @Repository
 @Transactional(readOnly = true)
-public class JdbcUserRepository extends AbstractJdbcRepository<User> implements UserRepository {
+public class JdbcUserRepository implements UserRepository {
     private final JdbcTemplate jdbcTemplate;
 
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -42,7 +43,7 @@ public class JdbcUserRepository extends AbstractJdbcRepository<User> implements 
     public User save(User user) {
         BeanPropertySqlParameterSource parameterSource = new BeanPropertySqlParameterSource(user);
 
-        validate(user);
+        ValidationUtil.validate(user);
 
         if (user.isNew()) {
             Number newKey = insertUser.executeAndReturnKey(parameterSource);
