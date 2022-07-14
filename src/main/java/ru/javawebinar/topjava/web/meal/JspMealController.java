@@ -1,4 +1,4 @@
-package ru.javawebinar.topjava.web;
+package ru.javawebinar.topjava.web.meal;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.service.MealService;
 import ru.javawebinar.topjava.util.MealsUtil;
+import ru.javawebinar.topjava.web.SecurityUtil;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
@@ -38,13 +39,25 @@ public class JspMealController {
 
     @GetMapping
     public String indexView(HttpServletRequest request) {
+        int userId = SecurityUtil.authUserId();
+        log.info("getAll for user {}", userId);
+        request.setAttribute("meals",
+                MealsUtil.getTos(mealService.getAll(userId), SecurityUtil.authUserCaloriesPerDay())
+        );
+        return "meals";
+    }
+
+    @GetMapping("/filter")
+    public String filterView(HttpServletRequest request) {
+        int userId = SecurityUtil.authUserId();
         LocalDate startDate = parseLocalDate(request.getParameter("startDate"));
         LocalDate endDate = parseLocalDate(request.getParameter("endDate"));
         LocalTime startTime = parseLocalTime(request.getParameter("startTime"));
         LocalTime endTime = parseLocalTime(request.getParameter("endTime"));
+        log.info("getBetween dates({} - {}) time({} - {}) for user {}", startDate, endDate, startTime, endTime, userId);
         request.setAttribute("meals",
                 MealsUtil.getFilteredTos(
-                        mealService.getBetweenInclusive(startDate, endDate, SecurityUtil.authUserId()),
+                        mealService.getBetweenInclusive(startDate, endDate, userId),
                         SecurityUtil.authUserCaloriesPerDay(),
                         startTime,
                         endTime
@@ -67,7 +80,10 @@ public class JspMealController {
 
     @GetMapping("/delete")
     public String deleteView(HttpServletRequest request) {
-        mealService.delete(getId(request), SecurityUtil.authUserId());
+        int userId = SecurityUtil.authUserId();
+        int mealId = getId(request);
+        log.info("delete meal with id={} for user {}", mealId, userId);
+        mealService.delete(mealId, userId);
         return "redirect:/meals";
     }
 
@@ -81,6 +97,8 @@ public class JspMealController {
                 request.getParameter("description"),
                 Integer.parseInt(request.getParameter("calories"))
         );
+
+        log.info("create/update meal with id={} for user {}", meal, userId);
 
         if (StringUtils.hasLength(request.getParameter("id"))) {
             assureIdConsistent(meal, getId(request));

@@ -6,5 +6,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title><spring:message code="app.title"/></title>
     <!-- https://studyeasy.org/general/get-base-url-using-context-path-on-jsp-page/ -->
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/style.css">
+    <!-- https://stackoverflow.com/questions/20417606/best-way-to-deal-with-relative-paths-base-tag -->
+    <base href="${pageContext.request.contextPath}/">
+    <link rel="stylesheet" href="resources/css/style.css">
 </head>
