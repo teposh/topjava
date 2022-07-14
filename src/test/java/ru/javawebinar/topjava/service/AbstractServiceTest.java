@@ -5,9 +5,6 @@ import org.junit.Rule;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.Stopwatch;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
-import org.springframework.core.env.Profiles;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
@@ -17,7 +14,6 @@ import ru.javawebinar.topjava.ActiveDbProfileResolver;
 import ru.javawebinar.topjava.TimingRules;
 
 import static org.junit.Assert.assertThrows;
-import static ru.javawebinar.topjava.Profiles.JDBC;
 import static ru.javawebinar.topjava.util.ValidationUtil.getRootCause;
 
 @ContextConfiguration({
@@ -28,9 +24,6 @@ import static ru.javawebinar.topjava.util.ValidationUtil.getRootCause;
 @Sql(scripts = "classpath:db/populateDB.sql", config = @SqlConfig(encoding = "UTF-8"))
 @ActiveProfiles(resolver = ActiveDbProfileResolver.class)
 public abstract class AbstractServiceTest {
-    @Autowired
-    protected Environment environment;
-
     @ClassRule
     public static ExternalResource summary = TimingRules.SUMMARY;
 
@@ -46,9 +39,5 @@ public abstract class AbstractServiceTest {
                 throw getRootCause(e);
             }
         });
-    }
-
-    protected boolean isJdbcProfile() {
-        return this.environment.acceptsProfiles(Profiles.of(JDBC));
     }
 }
