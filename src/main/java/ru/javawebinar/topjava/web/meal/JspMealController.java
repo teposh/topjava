@@ -1,7 +1,5 @@
 package ru.javawebinar.topjava.web.meal;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
@@ -10,7 +8,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.service.MealService;
-import ru.javawebinar.topjava.util.MealsUtil;
 import ru.javawebinar.topjava.web.SecurityUtil;
 
 import javax.servlet.http.HttpServletRequest;
@@ -23,27 +20,17 @@ import java.util.Objects;
 
 import static ru.javawebinar.topjava.util.DateTimeUtil.parseLocalDate;
 import static ru.javawebinar.topjava.util.DateTimeUtil.parseLocalTime;
-import static ru.javawebinar.topjava.util.ValidationUtil.assureIdConsistent;
-import static ru.javawebinar.topjava.util.ValidationUtil.checkNew;
 
 @Controller
 @RequestMapping("/meals")
-public class JspMealController {
-    private static final Logger log = LoggerFactory.getLogger(JspMealController.class);
-
-    private final MealService mealService;
-
+public class JspMealController extends AbstractMealController {
     JspMealController(MealService mealService) {
-        this.mealService = mealService;
+        super(mealService);
     }
 
     @GetMapping
     public String indexView(HttpServletRequest request) {
-        int userId = SecurityUtil.authUserId();
-        log.info("getAll for user {}", userId);
-        request.setAttribute("meals",
-                MealsUtil.getTos(mealService.getAll(userId), SecurityUtil.authUserCaloriesPerDay())
-        );
+        request.setAttribute("meals", getAll());
         return "meals";
     }
 
@@ -54,15 +41,7 @@ public class JspMealController {
         LocalDate endDate = parseLocalDate(request.getParameter("endDate"));
         LocalTime startTime = parseLocalTime(request.getParameter("startTime"));
         LocalTime endTime = parseLocalTime(request.getParameter("endTime"));
-        log.info("getBetween dates({} - {}) time({} - {}) for user {}", startDate, endDate, startTime, endTime, userId);
-        request.setAttribute("meals",
-                MealsUtil.getFilteredTos(
-                        mealService.getBetweenInclusive(startDate, endDate, userId),
-                        SecurityUtil.authUserCaloriesPerDay(),
-                        startTime,
-                        endTime
-                )
-        );
+        request.setAttribute("meals", getBetween(startDate, startTime, endDate, endTime));
         return "meals";
     }
 
@@ -74,16 +53,13 @@ public class JspMealController {
 
     @GetMapping("/update")
     public String updateView(HttpServletRequest request) {
-        request.setAttribute("meal", mealService.get(getId(request), SecurityUtil.authUserId()));
+        request.setAttribute("meal", get(getId(request)));
         return "mealForm";
     }
 
     @GetMapping("/delete")
     public String deleteView(HttpServletRequest request) {
-        int userId = SecurityUtil.authUserId();
-        int mealId = getId(request);
-        log.info("delete meal with id={} for user {}", mealId, userId);
-        mealService.delete(mealId, userId);
+        delete(getId(request));
         return "redirect:/meals";
     }
 
@@ -91,21 +67,16 @@ public class JspMealController {
     public String createOrUpdate(HttpServletRequest request) throws UnsupportedEncodingException {
         request.setCharacterEncoding("UTF-8");
 
-        int userId = SecurityUtil.authUserId();
         Meal meal = new Meal(
                 LocalDateTime.parse(request.getParameter("dateTime")),
                 request.getParameter("description"),
                 Integer.parseInt(request.getParameter("calories"))
         );
 
-        log.info("create/update meal with id={} for user {}", meal, userId);
-
         if (StringUtils.hasLength(request.getParameter("id"))) {
-            assureIdConsistent(meal, getId(request));
-            mealService.update(meal, userId);
+            update(meal, getId(request));
         } else {
-            checkNew(meal);
-            mealService.create(meal, userId);
+            create(meal);
         }
 
         return "redirect:/meals";
