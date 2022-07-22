@@ -48,7 +48,7 @@ class RootControllerTest extends AbstractControllerTest {
                             public void assertion(List<MealTo> actual) throws AssertionError {
                                 assertThat(actual)
                                         .usingRecursiveFieldByFieldElementComparator()
-                                        .isEqualTo(MealsUtil.getTos(meals, 2000));
+                                        .isEqualTo(MealsUtil.getTos(meals, MealsUtil.DEFAULT_CALORIES_PER_DAY));
                             }
                         }
                 ));
