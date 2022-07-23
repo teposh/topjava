@@ -2,7 +2,9 @@ package ru.javawebinar.topjava.web.meal;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.web.bind.annotation.RequestParam;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.service.MealService;
 import ru.javawebinar.topjava.to.MealTo;
@@ -11,6 +13,8 @@ import ru.javawebinar.topjava.util.exception.NotFoundException;
 import ru.javawebinar.topjava.web.AbstractControllerTest;
 import ru.javawebinar.topjava.web.json.JsonUtil;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -83,8 +87,11 @@ public class MealRestControllerTest extends AbstractControllerTest {
 
     @Test
     void getBetween() throws Exception {
-        MvcResult res = perform(get(MealRestController.REST_URL
-                + "/filter?start=2020-01-30T00:00:00&end=2020-01-30T14:00:00"))
+        MvcResult res = perform(get(MealRestController.REST_URL + "/filter?"
+                + "?startDate=2020-01-30"
+                + "&startTime=00:00:00"
+                + "&endDate=2020-01-30"
+                + "&endTime=14:00:00"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(contentType))
                 .andReturn();
