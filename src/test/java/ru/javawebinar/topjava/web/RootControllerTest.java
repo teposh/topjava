@@ -1,14 +1,13 @@
 package ru.javawebinar.topjava.web;
 
 import org.assertj.core.matcher.AssertionMatcher;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import ru.javawebinar.topjava.model.User;
-import ru.javawebinar.topjava.to.MealTo;
 import ru.javawebinar.topjava.util.MealsUtil;
 
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -43,14 +42,8 @@ class RootControllerTest extends AbstractControllerTest {
                 .andExpect(view().name("meals"))
                 .andExpect(forwardedUrl("/WEB-INF/jsp/meals.jsp"))
                 .andExpect(model().attribute("meals",
-                        new AssertionMatcher<List<MealTo>>() {
-                            @Override
-                            public void assertion(List<MealTo> actual) throws AssertionError {
-                                assertThat(actual)
-                                        .usingRecursiveFieldByFieldElementComparator()
-                                        .isEqualTo(MealsUtil.getTos(meals, MealsUtil.DEFAULT_CALORIES_PER_DAY));
-                            }
-                        }
-                ));
+                        // // https://stackoverflow.com/questions/27697875
+                        Matchers.equalTo(MealsUtil.getTos(meals, SecurityUtil.authUserCaloriesPerDay())))
+                );
     }
 }
