@@ -7,9 +7,9 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.service.UserService;
 import ru.javawebinar.topjava.web.AbstractControllerTest;
-import ru.javawebinar.topjava.web.SecurityUtil;
 import ru.javawebinar.topjava.web.json.JsonUtil;
 
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -51,13 +51,12 @@ class ProfileRestControllerTest extends AbstractControllerTest {
 
     @Test
     void getWithMeals() throws Exception {
-        perform(MockMvcRequestBuilders.get(ProfileRestController.REST_URL + "/with-meals"))
+        assumeTrue(isDataJpa());
+        var res = perform(MockMvcRequestBuilders.get(ProfileRestController.REST_URL + "/with-meals"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(result -> {
-                    User user = JsonUtil.readValue(result.getResponse().getContentAsString(), User.class);
-                    USER_MATCHER.assertMatch(user, userService.get(SecurityUtil.authUserId()));
-                    MEAL_MATCHER.assertMatch(user.getMeals(), meals);
-                });
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+        User actual = USER_MATCHER.readFromJson(res);
+        USER_MATCHER.assertMatch(actual, user);
+        MEAL_MATCHER.assertMatch(actual.getMeals(), meals);
     }
 }

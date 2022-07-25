@@ -8,16 +8,12 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.service.MealService;
 import ru.javawebinar.topjava.to.MealTo;
-import ru.javawebinar.topjava.util.MealsUtil;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 import ru.javawebinar.topjava.web.AbstractControllerTest;
-import ru.javawebinar.topjava.web.SecurityUtil;
 import ru.javawebinar.topjava.web.json.JsonUtil;
 
 import java.io.UnsupportedEncodingException;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -44,9 +40,15 @@ public class MealRestControllerTest extends AbstractControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn();
-        assertThatResultEqualsToMealsList(
-                res, MealsUtil.getTos(meals, SecurityUtil.authUserCaloriesPerDay())
-        );
+        assertThatResultEqualsToMealsList(res, List.of(
+                new MealTo(meal7),
+                new MealTo(meal6),
+                new MealTo(meal5),
+                new MealTo(meal4),
+                new MealTo(meal3, false),
+                new MealTo(meal2, false),
+                new MealTo(meal1, false)
+        ));
     }
 
     @Test
@@ -91,11 +93,7 @@ public class MealRestControllerTest extends AbstractControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn();
-        assertThatResultEqualsToMealsList(
-                res, MealsUtil.getTos(meals, SecurityUtil.authUserCaloriesPerDay()).stream()
-                        .filter(mealTo -> mealTo.getDateTime().isAfter(LocalDateTime.of(2020, 1, 31, 00, 00)))
-                        .collect(Collectors.toList())
-        );
+        assertThatResultEqualsToMealsList(res, List.of(new MealTo(meal7), new MealTo(meal6), new MealTo(meal5)));
     }
 
     @Test
@@ -106,15 +104,14 @@ public class MealRestControllerTest extends AbstractControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn();
-        assertThatResultEqualsToMealsList(
-                res, MealsUtil.getTos(List.of(meal7, meal6, meal5, meal4), SecurityUtil.authUserCaloriesPerDay())
-        );
+        assertThatResultEqualsToMealsList(res, List.of(
+                new MealTo(meal7), new MealTo(meal6), new MealTo(meal5), new MealTo(meal4)
+        ));
     }
 
     private static void assertThatResultEqualsToMealsList(MvcResult res, List<MealTo> mealTos)
             throws UnsupportedEncodingException {
         assertThat(JsonUtil.readValues(res.getResponse().getContentAsString(), MealTo.class))
-                .usingRecursiveFieldByFieldElementComparator()
                 .isEqualTo(mealTos);
     }
 }

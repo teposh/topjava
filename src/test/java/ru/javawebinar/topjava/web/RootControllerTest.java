@@ -1,7 +1,6 @@
 package ru.javawebinar.topjava.web;
 
 import org.assertj.core.matcher.AssertionMatcher;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.util.MealsUtil;
@@ -42,8 +41,8 @@ class RootControllerTest extends AbstractControllerTest {
                 .andExpect(view().name("meals"))
                 .andExpect(forwardedUrl("/WEB-INF/jsp/meals.jsp"))
                 .andExpect(model().attribute("meals",
-                        // // https://stackoverflow.com/questions/27697875
-                        Matchers.equalTo(MealsUtil.getTos(meals, SecurityUtil.authUserCaloriesPerDay())))
+                        // https://stackoverflow.com/questions/27697875
+                        MealsUtil.getTos(meals, SecurityUtil.authUserCaloriesPerDay()))
                 );
     }
 }

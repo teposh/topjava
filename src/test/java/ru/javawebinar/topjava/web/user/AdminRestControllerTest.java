@@ -15,6 +15,7 @@ import ru.javawebinar.topjava.web.json.JsonUtil;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -90,13 +91,12 @@ class AdminRestControllerTest extends AbstractControllerTest {
 
     @Test
     void getWithMeals() throws Exception {
-        perform(MockMvcRequestBuilders.get(REST_URL + ADMIN_ID + "/with-meals"))
+        assumeTrue(isDataJpa());
+        var res = perform(MockMvcRequestBuilders.get(REST_URL + ADMIN_ID + "/with-meals"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(result -> {
-                    User user = JsonUtil.readValue(result.getResponse().getContentAsString(), User.class);
-                    USER_MATCHER.assertMatch(user, userService.get(ADMIN_ID));
-                    MEAL_MATCHER.assertMatch(user.getMeals(), List.of(adminMeal2, adminMeal1));
-                });
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+        User actual = USER_MATCHER.readFromJson(res);
+        USER_MATCHER.assertMatch(actual, admin);
+        MEAL_MATCHER.assertMatch(actual.getMeals(), List.of(adminMeal2, adminMeal1));
     }
 }
