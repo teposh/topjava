@@ -40,15 +40,7 @@ public class MealRestControllerTest extends AbstractControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn();
-        assertThatResultEqualsToMealsList(res, List.of(
-                new MealTo(meal7),
-                new MealTo(meal6),
-                new MealTo(meal5),
-                new MealTo(meal4),
-                new MealTo(meal3, false),
-                new MealTo(meal2, false),
-                new MealTo(meal1, false)
-        ));
+        assertThatResultEqualsToMealsList(res, mealTos);
     }
 
     @Test
@@ -93,7 +85,7 @@ public class MealRestControllerTest extends AbstractControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn();
-        assertThatResultEqualsToMealsList(res, List.of(new MealTo(meal7), new MealTo(meal6), new MealTo(meal5)));
+        assertThatResultEqualsToMealsList(res, List.of(mealTo7, mealTo6, mealTo5));
     }
 
     @Test
@@ -104,9 +96,7 @@ public class MealRestControllerTest extends AbstractControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn();
-        assertThatResultEqualsToMealsList(res, List.of(
-                new MealTo(meal7), new MealTo(meal6), new MealTo(meal5), new MealTo(meal4)
-        ));
+        assertThatResultEqualsToMealsList(res, List.of(mealTo7, mealTo6, mealTo5, mealTo4));
     }
 
     private static void assertThatResultEqualsToMealsList(MvcResult res, List<MealTo> mealTos)

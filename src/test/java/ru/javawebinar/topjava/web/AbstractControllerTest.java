@@ -29,10 +29,10 @@ import static ru.javawebinar.topjava.Profiles.REPOSITORY_IMPLEMENTATION;
 @Transactional
 @ActiveProfiles(resolver = ActiveDbProfileResolver.class, profiles = REPOSITORY_IMPLEMENTATION)
 public abstract class AbstractControllerTest {
+    private static final CharacterEncodingFilter CHARACTER_ENCODING_FILTER = new CharacterEncodingFilter();
+
     @Autowired
     private Environment env;
-
-    private static final CharacterEncodingFilter CHARACTER_ENCODING_FILTER = new CharacterEncodingFilter();
 
     static {
         CHARACTER_ENCODING_FILTER.setEncoding("UTF-8");
