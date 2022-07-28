@@ -45,3 +45,20 @@ $(function () {
         })
     );
 });
+
+function setEnabled(e) {
+    const checkbox = $(e);
+    const closest = checkbox.closest("tr");
+    const enabled = checkbox.prop("checked");
+    const id = closest.attr("id");
+    console.log(id, enabled)
+    $.ajax({
+        url: userAjaxUrl + id,
+        type: "POST",
+        data: {
+            "enabled": enabled
+        }
+    }).done(function () {
+        closest.toggleClass("disabled");
+    });
+}
