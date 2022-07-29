@@ -32,10 +32,12 @@ function deleteRow(id) {
     });
 }
 
+function updateTableWithData(data) {
+    ctx.datatableApi.clear().rows.add(data).draw();
+}
+
 function updateTable() {
-    $.get(ctx.ajaxUrl, function (data) {
-        ctx.datatableApi.clear().rows.add(data).draw();
-    });
+    $.get(ctx.ajaxUrl, (data) => updateTableWithData(data));
 }
 
 function save() {

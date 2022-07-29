@@ -11,11 +11,10 @@
 
 <section>
     <h3><spring:message code="meal.title"/></h3>
-    <form>
+    <form id="filterForm">
         <dl>
             <dt><spring:message code="meal.startDate"/>:</dt>
-            <dd><input type="date" name="startDate" id="startDate" value="${param.startDate}" onchange="updateTable()">
-            </dd>
+            <dd><input type="date" name="startDate" id="startDate" value="${param.startDate}" onchange="updateTable()"></dd>
         </dl>
         <dl>
             <dt><spring:message code="meal.endDate"/>:</dt>
@@ -23,8 +22,7 @@
         </dl>
         <dl>
             <dt><spring:message code="meal.startTime"/>:</dt>
-            <dd><input type="time" name="startTime" id="startTime" value="${param.startTime}" onchange="updateTable()">
-            </dd>
+            <dd><input type="time" name="startTime" id="startTime" value="${param.startTime}" onchange="updateTable()"></dd>
         </dl>
         <dl>
             <dt><spring:message code="meal.endTime"/>:</dt>

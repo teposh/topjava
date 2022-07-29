@@ -58,7 +58,10 @@ function setEnabled(e) {
         data: {
             "enabled": enabled
         }
-    }).done(function () {
+    }).done(() => {
         closest.toggleClass("disabled");
-    });
+        successNoty(enabled ? "enabled" : "disabled");
+    }).fail(() => {
+        checkbox.prop("checked", !enabled);
+    })
 }

@@ -31,21 +31,12 @@ $(function () {
             "order": [
                 [
                     0,
-                    "asc"
+                    "desc"
                 ]
             ]
         })
     );
 });
-
-function getFilter() {
-    return "?" + [
-        "startDate=" + $("#startDate").val(),
-        "startTime=" + $("#startTime").val(),
-        "endDate=" + $("#endDate").val(),
-        "endTime=" + $("#endTime").val()
-    ].join("&");
-}
 
 function clearFilter() {
     $("#startDate").val("");
@@ -56,7 +47,5 @@ function clearFilter() {
 }
 
 function updateTable() {
-    $.get(ctx.ajaxUrl + getFilter(), function (data) {
-        ctx.datatableApi.clear().rows.add(data).draw();
-    });
+    $.get(ctx.ajaxUrl + "?" + $("#filterForm").serialize(), (data) => updateTableWithData(data));
 }
