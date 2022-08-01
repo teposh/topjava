@@ -14,20 +14,21 @@
     <form id="filterForm">
         <dl>
             <dt><spring:message code="meal.startDate"/>:</dt>
-            <dd><input type="date" name="startDate" id="startDate" value="${param.startDate}" onchange="updateTable()"></dd>
+            <dd><input type="date" name="startDate" id="startDate" value="${param.startDate}"></dd>
         </dl>
         <dl>
             <dt><spring:message code="meal.endDate"/>:</dt>
-            <dd><input type="date" name="endDate" id="endDate" value="${param.endDate}" onchange="updateTable()"></dd>
+            <dd><input type="date" name="endDate" id="endDate" value="${param.endDate}"></dd>
         </dl>
         <dl>
             <dt><spring:message code="meal.startTime"/>:</dt>
-            <dd><input type="time" name="startTime" id="startTime" value="${param.startTime}" onchange="updateTable()"></dd>
+            <dd><input type="time" name="startTime" id="startTime" value="${param.startTime}"></dd>
         </dl>
         <dl>
             <dt><spring:message code="meal.endTime"/>:</dt>
-            <dd><input type="time" name="endTime" id="endTime" value="${param.endTime}" onchange="updateTable()"></dd>
+            <dd><input type="time" name="endTime" id="endTime" value="${param.endTime}"></dd>
         </dl>
+        <button class="btn btn-info" onclick="updateTable();return false;"><spring:message code="meal.filter"/></button>
         <button class="btn btn-info" onclick="clearFilter();return false;"><spring:message code="common.cancel"/></button>
     </form>
     <button class="btn btn-primary" onclick="add()">

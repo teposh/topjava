@@ -39,10 +39,7 @@ $(function () {
 });
 
 function clearFilter() {
-    $("#startDate").val("");
-    $("#startTime").val("");
-    $("#endDate").val("");
-    $("#endTime").val("");
+    document.getElementById("filterForm").reset();
     updateTable();
 }
 
